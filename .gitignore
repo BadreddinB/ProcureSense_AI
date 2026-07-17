@@ -32,13 +32,18 @@ env/
 # Data
 # ==================================================
 
+# Ignorer les dossiers lourds
 data/raw/*
 data/processed/*
-data/prediction/*
+data/predictions/*
 
+# Autoriser les fichiers nécessaires au déploiement
+!data/procurement_features.csv
+
+# Garder les .gitkeep
 !data/raw/.gitkeep
 !data/processed/.gitkeep
-!data/prediction/.gitkeep
+!data/predictions/.gitkeep
 
 # ==================================================
 # Models
