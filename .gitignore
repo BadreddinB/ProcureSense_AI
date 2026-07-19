@@ -72,3 +72,8 @@ models/*
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# ==================================================
+# MISC
+# ==================================================
+procuresense_ai_qrcode.png
