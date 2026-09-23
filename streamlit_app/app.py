@@ -15,9 +15,9 @@ st.set_page_config(
     layout="wide"
 )
 
-# ------------------------------------------------------------
-# Design system - CSS
-# ------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Design System - CSS
+# ---------------------------------------------------------------------------
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap');
@@ -66,17 +66,18 @@ h1, h2, h3 {
     color: var(--ink) !important;
 }
 
-h2 {
-    font-size: 21px !important;
-    margin-bottom: 10px !important;
-}
-
 p, span, div, label, li {
     color: var(--ink);
 }
 
-/* Card look for st.container(border=True) blocks, applied to the closest
-   container carrying a .card-frame marker (see usage below) */
+/* Bordered "cards" throughout the app (selector, supplier profile, KPI tiles).
+   Streamlit's own st.container(border=True) draws its border via a per-render,
+   version-specific class name that cannot be targeted reliably, and in some
+   Streamlit versions its default border color is only visible on a dark
+   background. Each such container therefore carries an invisible marker
+   (span.card-frame) as its first element, and the *nearest* enclosing
+   stVerticalBlock is styled via :has() — scoped with a direct-child
+   combinator so only that container (never an outer/ancestor block) matches. */
 .card-frame { display: none; }
 
 div[data-testid="stVerticalBlock"]:has(> div[data-testid="stElementContainer"] .card-frame) {
@@ -97,7 +98,9 @@ div[data-baseweb="select"] * {
     color: var(--ink) !important;
 }
 
-/* Selectbox — open dropdown list (rendered outside .stApp, needs its own theming) */
+/* Selectbox — open dropdown list. Streamlit renders this menu in its own
+   DOM portal (div[data-baseweb="popover"]), outside .stApp, so it does not
+   inherit any of the rules above and must be themed explicitly here. */
 div[data-baseweb="popover"] {
     z-index: 999999 !important;
 }
@@ -126,9 +129,9 @@ hr {
 pipeline = load_pipeline()
 data = load_data()
 
-# ------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # Header
-# ------------------------------------------------------------
+# ---------------------------------------------------------------------------
 st.markdown("""
 <div style="display:flex; align-items:center; gap:16px; padding-bottom:28px;
             border-bottom:1px solid var(--border); margin-bottom:36px;">
@@ -151,22 +154,22 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # Project overview
-# ------------------------------------------------------------
-st.header("Project overview")
+# ---------------------------------------------------------------------------
+st.markdown('<h2 style="font-size:21px;margin-bottom:6px;">Project overview</h2>', unsafe_allow_html=True)
 st.write("""
 ProcureSense AI transforms procurement data into actionable insights,
 helping teams evaluate supplier risk, monitor performance,
 and strengthen operational reliability.
 """)
 
-st.divider()
+st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
-# ------------------------------------------------------------
-# Supplier risk prediction
-# ------------------------------------------------------------
-st.header("Supplier risk prediction")
+# ---------------------------------------------------------------------------
+# Supplier risk prediction (selection)
+# ---------------------------------------------------------------------------
+st.markdown('<h2 style="font-size:21px;margin-bottom:6px;">Supplier risk prediction</h2>', unsafe_allow_html=True)
 st.markdown(
     '<p style="font-size:13.5px;color:var(--ink-soft);margin-bottom:14px;">'
     'Select a supplier to generate its risk profile</p>',
@@ -182,17 +185,17 @@ with st.container(border=True):
 
 supplier_profile = data[data["Supplier"] == selected_supplier].iloc[0]
 
-st.divider()
+st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-# ------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # Supplier profile
-# ------------------------------------------------------------
+# ---------------------------------------------------------------------------
 total_cost_saving = round(
     supplier_profile["Cost_Saving"] * supplier_profile["Quantity"],
     2
 )
 
-st.header("Supplier profile")
+st.markdown('<h2 style="font-size:21px;margin-bottom:14px;">Supplier profile</h2>', unsafe_allow_html=True)
 
 with st.container(border=True):
     st.markdown('<span class="card-frame"></span>', unsafe_allow_html=True)
@@ -224,11 +227,11 @@ with st.container(border=True):
         </div>
         """, unsafe_allow_html=True)
 
-st.divider()
+st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-# ------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # Procurement KPIs
-# ------------------------------------------------------------
+# ---------------------------------------------------------------------------
 compliance_rate = data["Compliance"].mean()
 
 risk_label, risk_score = predict_supplier(pipeline, supplier_profile)
@@ -247,7 +250,7 @@ _badge_class_map = {"Low": "low", "Medium": "med", "High": "high"}
 badge_label = risk_category(risk_score)
 badge_class = _badge_class_map[badge_label]
 
-st.header("Procurement KPIs")
+st.markdown('<h2 style="font-size:21px;margin-bottom:14px;">Procurement KPIs</h2>', unsafe_allow_html=True)
 
 k1, k2, k3 = st.columns(3)
 
@@ -310,12 +313,12 @@ with k3:
             unsafe_allow_html=True
         )
 
-st.divider()
+st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-# ------------------------------------------------------------
-# AI compliance interpretation
-# ------------------------------------------------------------
-st.header("AI Compliance Interpretation")
+# ---------------------------------------------------------------------------
+# AI Compliance Interpretation
+# ---------------------------------------------------------------------------
+st.markdown('<h2 style="font-size:21px;margin-bottom:14px;">AI Compliance Interpretation</h2>', unsafe_allow_html=True)
 
 if risk_score >= 0.66:
     st.markdown(f"""
@@ -342,11 +345,11 @@ else:
     </div>
     """, unsafe_allow_html=True)
 
-st.divider()
+st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-# ------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # Explainable AI (SHAP)
-# ------------------------------------------------------------
+# ---------------------------------------------------------------------------
 shap_values = explain_prediction(pipeline, supplier_profile)
 
 drivers = {}
@@ -359,7 +362,7 @@ for feature, value in shap_values.items():
     if "Saving_Rate" in feature:
         drivers["Saving rate"] = value
 
-st.header("Explainable AI (SHAP)")
+st.markdown('<h2 style="font-size:21px;margin-bottom:6px;">Explainable AI (SHAP)</h2>', unsafe_allow_html=True)
 
 if drivers:
     st.markdown(
@@ -370,8 +373,8 @@ if drivers:
 
     max_abs = max(abs(v) for v in drivers.values()) or 1
 
-    # Each row built as a single-line string and joined below (avoids
-    # Streamlit mis-rendering indented multi-line HTML as a code block)
+    # Streamlit's Markdown treats indented multiline HTML as a code block, breaking the render.
+    # Building each fragment as a single-line string and joining them avoids any indented line, so the HTML renders correctly.
     rows_html = []
     for i, (name, value) in enumerate(drivers.items()):
         direction = "up" if value > 0 else "down"
@@ -410,11 +413,11 @@ else:
         "Please ensure these features exist in the model input."
     )
 
-st.divider()
+st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
 
-# ------------------------------------------------------------
-# Business recommendations
-# ------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Business Recommendations
+# ---------------------------------------------------------------------------
 recommendations = []
 
 if risk_score >= 0.66:
@@ -434,7 +437,7 @@ for name, value in drivers.items():
     if name == "Saving rate" and value < 0:
         recommendations.append("Leverage favorable commercial conditions while monitoring operations.")
 
-st.header("Business Recommendations")
+st.markdown('<h2 style="font-size:21px;margin-bottom:14px;">Business Recommendations</h2>', unsafe_allow_html=True)
 
 if recommendations:
     for rec in recommendations:
